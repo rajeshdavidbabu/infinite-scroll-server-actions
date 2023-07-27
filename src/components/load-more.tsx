@@ -18,7 +18,7 @@ export function LoadMore() {
 
   const loadMoreBeers = async () => {
     // Once the page 8 is reached repeat the process all over again.
-    await delay(200000);
+    await delay(2000);
     const nextPage = (page % 7) + 1;
     const newProducts = (await fetchBeers(nextPage)) ?? [];
     setBeers((prevProducts: Beer[]) => [...prevProducts, ...newProducts]);
