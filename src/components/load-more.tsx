@@ -1,31 +1,45 @@
 "use client";
-import { useEffect } from "react";
+
+import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
+import { Spinner } from "@/components/ui/spinner";
+import { fetchBeers } from "@/actions/fetch-products";
+import { Beer } from "@/types";
+import { Beers } from "@/components/beers";
 
-interface LoadMoreProps {
-  onLoadMore: () => void;
-}
+export function LoadMore() {
+  const [beers, setBeers] = useState<Beer[]>([]);
+  const [page, setPage] = useState(1);
 
-export function LoadMore({ onLoadMore }: LoadMoreProps) {
   const { ref, inView } = useInView();
+
+  const delay = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
+
+  const loadMoreBeers = async () => {
+    // Once the page 8 is reached repeat the process all over again.
+    await delay(200000);
+    const nextPage = (page % 7) + 1;
+    const newProducts = (await fetchBeers(nextPage)) ?? [];
+    setBeers((prevProducts: Beer[]) => [...prevProducts, ...newProducts]);
+    setPage(nextPage);
+  };
 
   useEffect(() => {
     if (inView) {
-      console.log("in view ", inView);
-      onLoadMore();
+      loadMoreBeers();
     }
   }, [inView]);
 
   return (
-    <div className="flex justify-center items-center p-4" ref={ref}>
+    <>
+      <Beers beers={beers} />
       <div
-        className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
-        role="status"
+        className="flex justify-center items-center p-4 col-span-1 sm:col-span-2 md:col-span-3"
+        ref={ref}
       >
-        <span className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">
-          Loading...
-        </span>
+        <Spinner />
       </div>
-    </div>
+    </>
   );
 }
